@@ -1,5 +1,5 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/client/models/type.dart';
 import 'package:giphy_get/src/providers/tab_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -13,36 +13,17 @@ class GiphyTabBar extends StatefulWidget {
 
 class _GiphyTabBarState extends State<GiphyTabBar> {
   TabProvider _tabProvider;
-  List<Tab> _tabs;
 
   @override
   void initState() {
     super.initState();
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     // TabProvider
-    _tabProvider = Provider.of<TabProvider>(context, listen: false);
-
-    // Set TabList
-    _tabs = [
-      Tab(
-        text: "GIFs",
-      ),
-      Tab(
-        text: "Stickers",
-      ),
-      Tab(
-        text: "Emoji",
-      ),
-    ];
-
-    //  Listen Tab Controller
-    widget.tabController.addListener(() {
-      _setTabType(widget.tabController.index);
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setTabType(0);
-    });
+    _tabProvider = Provider.of<TabProvider>(context, listen: true);
   }
 
   @override
@@ -54,35 +35,41 @@ class _GiphyTabBarState extends State<GiphyTabBar> {
 
   @override
   Widget build(BuildContext context) {
-    _tabProvider = Provider.of<TabProvider>(context);
-
-    return TabBar(
-      unselectedLabelColor: Theme.of(context).brightness == Brightness.light
-          ? Colors.black54
-          : Colors.white54,
-      labelColor: _tabProvider.tabColor ?? Theme.of(context).accentColor,
-      indicatorColor: Colors.transparent,
-      indicatorSize: TabBarIndicatorSize.label,
-      controller: widget.tabController,
-      tabs: _tabs,
-      onTap: _setTabType,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      color: Colors.white,
+      child: CupertinoSlidingSegmentedControl<TabType>(
+        padding: const EdgeInsets.all(3.0),
+        groupValue: _tabProvider.tabType,
+        onValueChanged: (TabType value) => _setTabType(value),
+        children: const <TabType, Widget>{
+          TabType.gifs: _SegmentItem(title: 'Gifs'),
+          TabType.stickers: _SegmentItem(title: 'Stickers'),
+          TabType.emoji: _SegmentItem(title: 'Emoji'),
+        },
+      ),
     );
   }
 
-  _setTabType(int pos) {
-    String _tabType;
-    // set Tab Type to provider
-    switch (widget.tabController.index) {
-      case 0:
-        _tabType = GiphyType.gifs;
-        break;
-      case 1:
-        _tabType = GiphyType.stickers;
-        break;
-      case 2:
-        _tabType = GiphyType.emoji;
-        break;
-    }
-    _tabProvider.tabType = _tabType;
+  _setTabType(TabType pos) => _tabProvider.tabType = pos;
+}
+
+class _SegmentItem extends StatelessWidget {
+  const _SegmentItem({
+    Key key,
+    this.title,
+  }) : super(key: key);
+
+  final String title;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.maxFinite,
+      child: Text(
+        title,
+        //style: WeStriveTextStyle.lato12Bold,
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 }

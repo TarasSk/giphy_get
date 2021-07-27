@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:giphy_get/src/providers/sheet_provider.dart';
+import 'package:giphy_get/src/providers/tab_provider.dart';
 import 'package:giphy_get/src/views/appbar/searchappbar.dart';
 import 'package:giphy_get/src/views/tab/giphy_tab_bar.dart';
 import 'package:giphy_get/src/views/tab/giphy_tab_view.dart';
@@ -12,12 +13,15 @@ class MainView extends StatefulWidget {
   _MainViewState createState() => _MainViewState();
 }
 
-class _MainViewState extends State<MainView> with SingleTickerProviderStateMixin{
+class _MainViewState extends State<MainView>
+    with SingleTickerProviderStateMixin {
   // Scroll Controller
   ScrollController _scrollController;
 
   // Sheet Provider
   SheetProvider _sheetProvider;
+
+  TabProvider _tabProvider;
 
   // Tab Controller
   TabController _tabController;
@@ -32,6 +36,7 @@ class _MainViewState extends State<MainView> with SingleTickerProviderStateMixin
   @override
   void didChangeDependencies() {
     _sheetProvider = Provider.of<SheetProvider>(context);
+    _tabProvider = Provider.of<TabProvider>(context);
     super.didChangeDependencies();
   }
 
@@ -42,31 +47,34 @@ class _MainViewState extends State<MainView> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return _draggableScrollableSheet();
+    return _bottomSheetBody();
   }
-
-  Widget _draggableScrollableSheet() => DraggableScrollableSheet(
-      key: Key("${_sheetProvider.initialExtent}"),
-      expand: _sheetProvider.isExpanded,
-      minChildSize: SheetProvider.minExtent,
-      maxChildSize: SheetProvider.maxExtent,
-      initialChildSize: _sheetProvider.initialExtent,
-      builder: (ctx, scrollController) {
-        // Set ScrollController
-        this._scrollController = scrollController;
-        return _bottomSheetBody();
-      });
 
   Widget _bottomSheetBody() => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SearchAppBar(scrollController: this._scrollController),
-          GiphyTabBar(tabController: _tabController,),
-          Expanded(child: GiphyTabView(
+          Container(
+            height: 4,
+            width: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SearchAppBar(),
+          GiphyTabBar(tabController: _tabController),
+          Expanded(
+            child: GiphyTabView(
               tabController: _tabController,
-              scrollController: this._scrollController,
-            ))
+              tabType: _tabProvider.tabType,
+            ),
+          ),
+          Container(
+            color: Colors.white,
+            height: 34,
+            width: double.infinity,
+          )
         ],
       );
-
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:giphy_get/src/client/models/type.dart';
 import 'package:giphy_get/src/providers/app_bar_provider.dart';
 import 'package:giphy_get/src/providers/sheet_provider.dart';
 import 'package:giphy_get/src/providers/tab_provider.dart';
@@ -7,9 +6,10 @@ import 'package:provider/provider.dart';
 
 class SearchAppBar extends StatefulWidget {
   // Scroll Controller
-  final ScrollController scrollController;
 
-  SearchAppBar({Key key, this.scrollController}) : super(key: key);
+  SearchAppBar({
+    Key key,
+  }) : super(key: key);
 
   @override
   _SearchAppBarState createState() => _SearchAppBarState();
@@ -33,9 +33,6 @@ class _SearchAppBarState extends State<SearchAppBar> {
   @override
   void initState() {
     super.initState();
-
-    _focus..addListener(_focusListener);
-
     // Listener TextField
     _textEditingController.addListener(() {
       _appBarProvider.queryText = _textEditingController.text;
@@ -65,36 +62,31 @@ class _SearchAppBarState extends State<SearchAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: Theme.of(context).canvasColor,
-      elevation: 0.0,
-      titleSpacing: 10.0,
-      automaticallyImplyLeading: false,
-      title: _searchWidget(),
-      actions: [],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: _searchWidget(),
     );
   }
 
-  Widget _searchWidget() => Column(
-        children: [
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 8.0),
-            width: 50,
-            height: 2,
-            color: Theme.of(context).textTheme.bodyText1.color,
-          ),
-          _tabProvider.tabType == GiphyType.emoji
-              ? Container(
-                height: 40.0,
-                child: _giphyLogo())
-              : Container(
-                  decoration: BoxDecoration(
-                      color: (Theme.of(context).brightness == Brightness.light)
-                          ? Colors.grey[300]
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(8.0)),
-                  height: 40.0,
-                  child: Center(
+  Widget _searchWidget() => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _tabProvider.tabType == TabType.emoji
+                ? Container(height: 40.0, child: _giphyLogo())
+                : Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF0F0F0),
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    height: 42.0,
                     child: TextField(
                       autofocus: _sheetProvider.initialExtent ==
                           SheetProvider.maxExtent,
@@ -102,22 +94,21 @@ class _SearchAppBarState extends State<SearchAppBar> {
                       controller: _textEditingController,
                       style: TextStyle(color: Colors.black),
                       decoration: InputDecoration(
-                          prefixIcon: _searchIcon(),
-                          hintStyle: TextStyle(color: Colors.black45),
-                          hintText: _tabProvider.searchText,
-                          border: InputBorder.none),
+                        prefixIcon: _searchIcon(),
+                        hintStyle: TextStyle(color: Colors.black45),
+                        hintText: _tabProvider.searchText,
+                        border: InputBorder.none,
+                      ),
                       autocorrect: false,
                     ),
                   ),
-                ),
-        ],
+          ],
+        ),
       );
 
   Widget _giphyLogo() {
     const basePath = "assets/img/";
-    String logoPath = Theme.of(context).brightness == Brightness.light
-        ? "GIPHY_light.png"
-        : "GIPHY_dark.png";
+    String logoPath = "GIPHY_light.png";
 
     return Center(
         child: Image.asset(
@@ -136,13 +127,4 @@ class _SearchAppBarState extends State<SearchAppBar> {
             ]).createShader(bounds),
         child: Icon(Icons.search),
       );
-
-  void _focusListener() {
-    // Set to max extent height if Textfield has focus
-    if (_focus.hasFocus &&
-        _sheetProvider.initialExtent == SheetProvider.minExtent) {
-      _sheetProvider.initialExtent = SheetProvider.maxExtent;
-    }
-    print("Focus : ${_focus.hasFocus}");
-  }
 }

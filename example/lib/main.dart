@@ -109,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
             GiphyGif gif = await GiphyGet.getGif(
               context: context,
               apiKey: "pS9UBDXe6dJkZsz0Et2sNUzvIPe822zP",
-              lang: GiphyLanguage.spanish,
+              lang: GiphyLanguage.english,
             );
             if (gif != null && mounted) {
               setState(() {

@@ -12,9 +12,7 @@ import 'package:provider/provider.dart';
 
 class GiphyTabDetail extends StatefulWidget {
   final String type;
-  final ScrollController scrollController;
-  GiphyTabDetail({Key key, @required this.type, this.scrollController})
-      : super(key: key);
+  GiphyTabDetail({Key key, @required this.type}) : super(key: key);
 
   @override
   _GiphyTabDetailState createState() => _GiphyTabDetailState();
@@ -51,9 +49,13 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
   // is Loading gifs
   bool _isLoading = false;
 
+  ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+
+    _scrollController = ScrollController();
 
     // Tab Provider
     _tabProvider = Provider.of<TabProvider>(context, listen: false);
@@ -80,7 +82,7 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
     }
 
     // ScrollController
-    widget.scrollController..addListener(_scrollListener);
+    _scrollController.addListener(_scrollListener);
 
     // Listen query
     _appBarProvider.addListener(_listenerQuery);
@@ -108,23 +110,28 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
     // dispose listener
     // Important
     _appBarProvider.removeListener(_listenerQuery);
-    widget.scrollController.removeListener(_scrollListener);
+    _scrollController.removeListener(_scrollListener);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_list.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(),
+      return Container(
+        color: Colors.white,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: StaggeredGridView.countBuilder(
+          key: PageStorageKey<String>(_tabProvider.tabType.toString()),
           scrollDirection: _scrollDirection,
-          controller: widget.scrollController,
+          controller: _scrollController,
           itemCount: _list.length,
           crossAxisCount: _crossAxisCount,
           mainAxisSpacing: _spacing,
@@ -212,19 +219,22 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
       // If query text is not null search gif else trendings
       if (_appBarProvider.queryText.isNotEmpty &&
           widget.type != GiphyType.emoji) {
-        _collection = await client.search(_appBarProvider.queryText,
-            lang: _tabProvider.lang,
-            offset: offset,
-            rating: _tabProvider.rating,
-            type: widget.type,
-            limit: _limit);
+        _collection = await client.search(
+          _appBarProvider.queryText,
+          lang: _tabProvider.lang,
+          offset: offset,
+          rating: _tabProvider.rating,
+          type: widget.type,
+          limit: _limit,
+        );
       } else {
         _collection = await client.trending(
-            lang: _tabProvider.lang,
-            offset: offset,
-            rating: _tabProvider.rating,
-            type: widget.type,
-            limit: _limit);
+          lang: _tabProvider.lang,
+          offset: offset,
+          rating: _tabProvider.rating,
+          type: widget.type,
+          limit: _limit,
+        );
       }
     }
 
@@ -240,7 +250,7 @@ class _GiphyTabDetailState extends State<GiphyTabDetail> {
 
   // Scroll listener. if scroll end load more gifs
   void _scrollListener() {
-    if ((widget.scrollController.position.extentAfter < 500) && !_isLoading) {
+    if ((_scrollController.position.extentAfter < 500) && !_isLoading) {
       _loadMore();
     }
   }
